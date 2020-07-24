@@ -14,7 +14,7 @@
     (floor (+ red green blue) 3)))
 
 (defun asciify (filename)
-  (let ((image (imago:read-image filename)))
+  (let ((image (imago:resize (imago:read-image filename) 80 23)))
     (when image
       (format t "Successfully loaded ~s!~%" filename)
       (format t "Image size: ~sx~s~%"
@@ -22,5 +22,5 @@
 	      (imago:image-height image))
       (imago:do-image-pixels
        (image color x y)
-       (format t "~a~%"
+       (format t "~a"
 	       (brightness-to-character (color-brightness color)))))))
