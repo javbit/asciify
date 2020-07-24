@@ -3,24 +3,50 @@
 (defconstant CHARACTERS
   "`^\",:;Il!i~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$")
 
-(defun brightness-to-character (Y)
+(defconstant Pr 0.2126)
+(defconstant Pg 0.7152)
+(defconstant Pb 0.0722)
+
+(defun brightness->character (Y)
   "Convert Y in [0, 256) to a character that best captures it."
   (char CHARACTERS (floor (* Y (length CHARACTERS)) 255)))
 
-(defun color-brightness (color)
+(defun brightness (color)
   (let ((red (imago:color-red color))
 	(green (imago:color-green color))
 	(blue (imago:color-blue color)))
     (floor (+ red green blue) 3)))
 
-(defun asciify (filename)
+(defun lightness (color)
+  (let ((red (imago:color-red color))
+	(green (imago:color-green color))
+	(blue (imago:color-blue color)))
+    (floor (+ (max red green blue)
+	      (min red green blue))
+	   2)))
+
+(defun luminance (color)
+  (let ((red (imago:color-red color))
+	(green (imago:color-green color))
+	(blue (imago:color-blue color)))
+    (floor (+ (* Pr red)
+	      (* Pg green)
+	      (* Pb blue)))))
+
+(defun pixel-brightness (color method)
+  (case method
+	(:brightness (brightness color))
+	(:lightness (lightness color))
+	(:luminance (luminance color))
+	(otherwise (imago:color-intensity color))))
+
+(defun pixel->ascii (pixel method)
+  "Convert PIXEL to ASCII character using CONVERSION method."
+  (brightness->character (pixel-brightness pixel method)))
+
+(defun asciify (filename &optional method)
   (let ((image (imago:resize (imago:read-image filename) 80 23)))
     (when image
-      (format t "Successfully loaded ~s!~%" filename)
-      (format t "Image size: ~sx~s~%"
-	      (imago:image-width image)
-	      (imago:image-height image))
       (imago:do-image-pixels
-       (image color x y)
-       (format t "~a"
-	       (brightness-to-character (color-brightness color)))))))
+       (image pixel x y)
+       (format t "~a" (pixel->ascii pixel method))))))
