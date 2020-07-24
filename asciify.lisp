@@ -1,5 +1,12 @@
 (require :imago)
 
+(defconstant CHARACTERS
+  "`^\",:;Il!i~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$")
+
+(defun brightness-to-character (Y)
+  "Convert Y in [0, 256) to a character that best captures it."
+  (char CHARACTERS (floor (* Y (length CHARACTERS)) 255)))
+
 (defun color-brightness (color)
   (let ((red (imago:color-red color))
 	(green (imago:color-green color))
@@ -15,4 +22,5 @@
 	      (imago:image-height image))
       (imago:do-image-pixels
        (image color x y)
-       (format t "~s~%" (color-brightness color))))))
+       (format t "~a~%"
+	       (brightness-to-character (color-brightness color)))))))
