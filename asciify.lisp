@@ -44,8 +44,8 @@
   "Convert PIXEL to ASCII character using CONVERSION method."
   (brightness->character (pixel-brightness pixel method)))
 
-(defun escape ()
-  (string #\Escape))
+(defconstant ESCAPE
+  (string #\Esc))
 
 (defparameter *bg-color* 38)
 
@@ -54,20 +54,26 @@
 	(green (write-to-string (imago:color-green color)))
 	(blue (write-to-string (imago:color-blue color)))
 	(bg (write-to-string *bg-color*)))
-    (concatenate 'string (escape) "[" bg ":2:" red ":" green ":" blue "m")))
+    (concatenate 'string ESCAPE "[" bg ":2:" red ":" green ":" blue "m")))
 
-(defun clear ()
-  (concatenate 'string (escape) "[0m"))
+(defconstant CLEAR
+  (concatenate 'string ESCAPE "[0m"))
 
 (defun print-pixel (pixel method colorp)
   (let ((shape (string (pixel->ascii pixel method))))
     (write (if colorp
-	       (concatenate 'string (colorize pixel) shape (clear))
+	       (concatenate 'string (colorize pixel) shape CLEAR)
 	     shape)
 	   :escape nil)))
+
+(defun newline ()
+  (write (string #\Newline) :escape nil))
 
 (defun asciify (filename &optional method colorp)
   (let ((image (imago:resize (imago:read-image filename) 80 23)))
     (when image
       (imago:do-image-pixels (image pixel x y)
-			     (print-pixel pixel method colorp)))))
+			     (when (and (zerop x) (not (zerop y)))
+			       (newline))
+			     (print-pixel pixel method colorp))
+      (newline))))
