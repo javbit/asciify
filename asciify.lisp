@@ -1,3 +1,5 @@
+;; Program Idea from https://robertheaton.com/2018/06/12/programming-projects-for-advanced-beginners-ascii-art/
+
 (require :imago)
 
 (defconstant CHARACTERS
