@@ -9,7 +9,7 @@
 
 (defun brightness->character (Y)
   "Convert Y in [0, 256) to a character that best captures it."
-  (char CHARACTERS (floor (* Y (length CHARACTERS)) 255)))
+  (char CHARACTERS (floor (* Y (1- (length CHARACTERS))) 255)))
 
 (defun brightness (color)
   (let ((red (imago:color-red color))
@@ -44,9 +44,30 @@
   "Convert PIXEL to ASCII character using CONVERSION method."
   (brightness->character (pixel-brightness pixel method)))
 
-(defun asciify (filename &optional method)
+(defun escape ()
+  (string #\Escape))
+
+(defparameter *bg-color* 38)
+
+(defun colorize (color)
+  (let ((red (write-to-string (imago:color-red color)))
+	(green (write-to-string (imago:color-green color)))
+	(blue (write-to-string (imago:color-blue color)))
+	(bg (write-to-string *bg-color*)))
+    (concatenate 'string (escape) "[" bg ":2:" red ":" green ":" blue "m")))
+
+(defun clear ()
+  (concatenate 'string (escape) "[0m"))
+
+(defun print-pixel (pixel method colorp)
+  (let ((shape (string (pixel->ascii pixel method))))
+    (write (if colorp
+	       (concatenate 'string (colorize pixel) shape (clear))
+	     shape)
+	   :escape nil)))
+
+(defun asciify (filename &optional method colorp)
   (let ((image (imago:resize (imago:read-image filename) 80 23)))
     (when image
-      (imago:do-image-pixels
-       (image pixel x y)
-       (format t "~a" (pixel->ascii pixel method))))))
+      (imago:do-image-pixels (image pixel x y)
+			     (print-pixel pixel method colorp)))))
