@@ -11,27 +11,27 @@
   "Convert Y in [0, 256) to a character that best captures it."
   (char CHARACTERS (floor (* Y (1- (length CHARACTERS))) 255)))
 
+(defmacro with-rgb (color r g b &body body)
+  `(let ((,r (imago:color-red ,color))
+	 (,g (imago:color-green ,color))
+	 (,b (imago:color-blue ,color)))
+     ,@body))
+
 (defun brightness (color)
-  (let ((red (imago:color-red color))
-	(green (imago:color-green color))
-	(blue (imago:color-blue color)))
-    (floor (+ red green blue) 3)))
+  (with-rgb color red green blue
+	    (floor (+ red green blue) 3)))
 
 (defun lightness (color)
-  (let ((red (imago:color-red color))
-	(green (imago:color-green color))
-	(blue (imago:color-blue color)))
-    (floor (+ (max red green blue)
-	      (min red green blue))
-	   2)))
+  (with-rgb color red green blue
+	    (floor (+ (max red green blue)
+		      (min red green blue))
+		   2)))
 
 (defun luminance (color)
-  (let ((red (imago:color-red color))
-	(green (imago:color-green color))
-	(blue (imago:color-blue color)))
-    (floor (+ (* Pr red)
-	      (* Pg green)
-	      (* Pb blue)))))
+  (with-rgb color red green blue
+	    (floor (+ (* Pr red)
+		      (* Pg green)
+		      (* Pb blue)))))
 
 (defun pixel-brightness (color method)
   (case method
